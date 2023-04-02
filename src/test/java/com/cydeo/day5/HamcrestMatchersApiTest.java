@@ -1,81 +1,93 @@
 package com.cydeo.day5;
 
-import org.hamcrest.MatcherAssert;
-import org.hamcrest.Matchers;
+import io.restassured.http.ContentType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
-import java.util.List;
-
 import static io.restassured.RestAssured.*;
-import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
-
 public class HamcrestMatchersApiTest {
 
+    @DisplayName("OneSpartan with Hamcrest and chaining")
     @Test
-    public void simpleTest1(){
+    public void test1(){
 
-       // MatcherAssert.assertThat(5+5, Matchers.is(10));
-        //after static import
-        assertThat(5+5, is(10));
-        assertThat(5+5,equalTo(10));
-        assertThat(5+5,is(equalTo(10)));
+        /*
+       given accept type is Json
+       And path param id is 15
+       When user sends a get request to spartans/{id}
+       Then status code is 200
+       And content type is Json
+       And json data has following
+           "id": 15,
+           "name": "Meta",
+           "gender": "Female",
+           "phone": 1938695106
+        */
 
-        assertThat(5+5,not(9));
-        assertThat(5+5,is(not(9)));
-        assertThat(5+5,is(not(equalTo(9))));
 
-        assertThat(5+5,is(greaterThan(9)));
-
+        given().log().all()
+                    .accept(ContentType.JSON)
+                    .and().queryParam("id",15)
+                .when()
+                    .get("http://52.207.61.129:8000/api/spartans/{id}")
+                .then()
+                    .statusCode(200)
+                .and()
+                    .contentType("application/json")
+                .and()
+                    .body("id",is(15),
+                            "name",is("Meta"),
+                            "gender",is("Female"),
+                            "phone",is(1938695106));
 
 
     }
 
 
-    @DisplayName("Assertion with String")
+    @DisplayName("CBTraining Teacher request with chaining and matchers")
     @Test
-    public void stringHamcrest(){
+    public void teacherData(){
 
-        String text = "EU10 is learning Hamcrest";
+        given()
+                .accept(ContentType.JSON)
+                .and()
+                .pathParam("id",10423)
+                .and()
 
-        assertThat(text,is("EU10 is learning Hamcrest"));
-        assertThat(text,equalTo("EU10 is learning Hamcrest"));
-        assertThat(text,is(equalTo("EU10 is learning Hamcrest")));
-
-        assertThat(text,startsWith("EU10"));
-        assertThat(text,startsWithIgnoringCase("eu10"));
-        assertThat(text,endsWith("rest"));
-        assertThat(text,endsWithIgnoringCase("ReSt"));
-        assertThat(text,containsString("learning"));
-        assertThat(text,containsStringIgnoringCase("leARniNg"));
-
-        String str = "  ";
-
-        assertThat(str,blankString());
-        assertThat(str.trim(),emptyString());
-
+                .when()
+                .get("http://api.cybertektraining.com/teacher/{id}")
+                .then()
+                .statusCode(200)
+                .and()
+                .contentType("application/json;charset=UTF-8")
+                .and()
+                .header("Content-Length",is("236"))
+                .and()
+                .header("Date",notNullValue())
+                .and().assertThat()
+                .body("teachers[0].firstName",is("Alexander"))
+                .body("teachers[0].lastName",is("Syrup"))
+                .body("teachers[0].gender",equalTo("male"));
 
 
     }
 
 
-    @DisplayName("Hamcrest for Collection")
+    @DisplayName("GET request to teacher/all and chaining")
     @Test
-    public void testCollection(){
+    public void teachersTest(){
 
-        List<Integer> listOfNumbers = Arrays.asList(1,4,5,6,32,54,66,77,45,23);
+        //verify Alexander,Darleen,Sean inside the all teachers
+        given()
+                .accept(ContentType.JSON)
+                .when()
+                .get("http://api.cybertektraining.com/teacher/all")
+                .then()
+                .statusCode(200)
+                .and()
+                .body("teachers.firstName",hasItems("Alexander","Darleen","Sean"));
 
-        //check size of the list
-        assertThat(listOfNumbers,hasSize(10));
-        //check if this list hasItem 77
-        assertThat(listOfNumbers,hasItem(77));
-        //check if this list hasItems 77,54,23
-        assertThat(listOfNumbers,hasItems(77,54,23));
-
-        //check if all numbers greater than 0
-        assertThat(listOfNumbers,everyItem(greaterThan(0)));
 
     }
 

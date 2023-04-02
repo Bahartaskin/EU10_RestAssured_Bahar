@@ -40,12 +40,18 @@ public class CBTrainingApiWithJsonPath {
                 using JsonPath
              */
 
-        Response response = given().accept(ContentType.JSON)
-                .and().queryParam("studentId", 23401)
-                .when().get("/student/all");
+        given()
+                .accept(ContentType.JSON)
+                .and()
+                .pathParam("id",23401)
+                .and()
 
-        assertEquals(200,response.statusCode());
-        assertEquals("application/json;charset=UTF-8",response.contentType());
+                .when()
+                .get("/student/{id}")
+                .then()
+                .statusCode(200)
+                .and()
+                .contentType("application/json;charset=UTF-8");
 
 
     }
